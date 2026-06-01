@@ -318,7 +318,7 @@ promote() {
 }
 
 update() {
-  # Step 1: fetch latest; skip diff if nothing was downloaded
+  # Step 1: fetch latest; skip if nothing new
   local last_ver_before
   last_ver_before="$(read_version_file "$TOOLS_LAST")"
 
@@ -331,45 +331,17 @@ update() {
     return 0
   fi
 
-  # Step 2: check for changes affecting overrides
+  # Step 2: show diff
   echo ""
-  header "update — checking overrides..."
-  echo ""
+  diff --all
 
+  # Step 3: prompt to promote only if there are actual changes
   local core_output
   core_output="$(_diff_core "$TOOLS_REF" "$TOOLS_LAST")"
 
-  local changed=0 affected=0
-
-  while IFS=' ' read -r status rel; do
-    local tool_id="${rel%.txt}"
-    case "$status" in
-      C!)
-        affected=$((affected + 1))
-        echo "  ${YELLOW}⚠${NC} $rel ${RED}(has override)${NC}"
-        changed=$((changed + 1))
-        ;;
-      R)
-        changed=$((changed + 1))
-        if [[ -f "$OVERRIDES_DIR/$tool_id.txt" ]]; then
-          affected=$((affected + 1))
-          echo "  ${RED}❌${NC} $rel ${RED}REMOVED (has override)${NC}"
-        fi
-        ;;
-      C|A) changed=$((changed + 1)) ;;
-    esac
-  done <<< "$core_output"
-
-  echo ""
-  if [[ $affected -gt 0 ]]; then
-    warn "${BOLD}$affected override(s) affected — update blocked.${NC}"
-    info "Review changes with 'diff', then run 'promote' if safe."
-    exit 1
-  elif [[ $changed -gt 0 ]]; then
-    info "No overrides affected — auto-promoting."
-    promote
-  else
-    info "Already up to date."
+  if [[ -n "$core_output" ]]; then
+    echo ""
+    info "Run '${BOLD}promote${NC}' to adopt the new version (last/ → ref/)."
   fi
 }
 
@@ -584,7 +556,7 @@ help() {
   echo "  ${GREEN}uninstall${NC}  Remove the plugin symlink (does not touch overrides/)"
   echo "  ${GREEN}capture${NC}    Download tool descriptions for the installed version (opencode --version)"
   echo "  ${GREEN}fetch${NC}      Download tools from the latest GitHub release → last/"
-  echo "  ${GREEN}update${NC}     Fetch + auto-promote if no overrides affected, block otherwise"
+  echo "  ${GREEN}update${NC}     Fetch + diff. Review changes then run promote manually"
   echo "  ${GREEN}diff${NC}       Compare ref/ vs last/ (use --all for full diff, --impact for overrides only)"
   echo "  ${GREEN}promote${NC}    Copy last/ → ref/ (after verifying compatibility)"
   echo "  ${GREEN}status${NC}     Show versions, plugin status, and overrides"

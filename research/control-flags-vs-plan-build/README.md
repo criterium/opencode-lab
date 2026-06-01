@@ -179,7 +179,7 @@ Both load the **same custom prompt** with control flags. The model difference al
         "prompt": "{file:~/.config/opencode/custom-prompt.txt}",
         "model": "deepseek/deepseek-v4-pro",
         "options": {
-          "reasoningEffort": "max"
+          "reasoningEffort": "high"
         }
       },
       "junior": {
@@ -194,6 +194,48 @@ Both load the **same custom prompt** with control flags. The model difference al
   ```
 
 - **The mode switch is still Tab.** OpenCode's Tab key switches between agents, and now each agent is a different model rather than a different behavioral mode. The cognitive load is lower: you only decide "do I need power or speed?", not "do I want a different behavioral overlay?".
+
+### How each model responds to control flags
+
+Both models process the same flag system from `custom.md`, but they rely on it to different degrees:
+
+| Flag | Flash (junior) | Pro (senior) |
+|------|---------------|-------------|
+| `¿¿` LOCK | **Essential.** Without it, Flash may execute changes during analysis. The flag is an external brake against its closure bias. | **Redundant.** Pro defaults to deliberation. It won't edit without confirmation even in INQUIRY mode. The flag confirms what it would do anyway. |
+| `¡¡` IDEAS | **Useful.** Channels Flash's speed into exploration instead of premature execution. | **Redundant.** Pro explores alternatives naturally when asked. No behavioral change. |
+| `{}` PLAN | **Critical.** Forces Flash to stop before coding in multi-file tasks. Without it, Flash proposes and executes in the same turn. | **Useful.** Changes behavior: without it Pro tends to analyze AND execute; with it, it designs sequential steps and stops. |
+| `++` EXPLAIN | **Useful.** Narrows focus to pedagogy, preventing drift into execution. | **Useful.** Same narrowing effect. Without it, Pro explains but may execute obvious fixes. |
+| `?¿` REQUIRE | **Useful.** Forces Flash not to answer, only to question — counteracting its bias to propose solutions from incomplete information. | **Valuable.** Forces Pro to ask without proposing interpretations. Counter-intuitive but valuable for ill-defined problems. |
+| `--` EXIT | **Rarely needed.** Sending the next message without a flag already falls back to INQUIRY. | **Rarely needed.** Same reason. |
+
+**Key insight:** the flag system exists primarily for Flash. Most flags compensate for Flash's documented behavioral patterns (closure, omission, deflection). For Pro, only `{}` (PLAN), `++` (EXPLAIN), and `?¿` (REQUIRE) meaningfully change its default behavior. The rest are processed faithfully but add no value — consuming reasoning tokens in both the prompt and the thinking phase.
+
+> **Model specificity:** The behavioral patterns above were observed with **DeepSeek V4 Flash** and **DeepSeek V4 Pro**. Other models — other DeepSeek variants, Claude, GPT, Gemini, open-weight models — may respond differently to the same flags and prompt. A model prone to impulsivity may need more flags; a model prone to overanalysis may need fewer. The flag system is a mechanism, not a prescription. Test your own models; do not assume this table generalizes.
+
+This asymmetry does not require separate prompts: the flags are harmless for Pro and essential for Flash. However, if Pro usage becomes dominant (>40% of interactions), removing Flash-only rules from a dedicated `custom-senior.md` saves ~27% reasoning overhead. See [Battle Agent Prompt](../deepseek-battle-agent-prompt/README.md) for the behavioral profiles behind each mitigation.
+
+### Model-specific `reasoningEffort`
+
+DeepSeek V4 exposes two real values: `"high"` (capped reasoning budget, ~4096 tokens) and `"max"` (unlimited). The same parameter has opposite effects per model:
+
+| Model | `reasoningEffort` | Why |
+|-------|-------------------|-----|
+| Flash (junior) | `"max"` | **Necessary brake.** Its default bias is speed over completeness. `"max"` forces deliberation, reducing omissions and premature closure. |
+| Pro (senior) | `"high"` | **Amplifies overthinking.** Pro already deliberates deeply. `"max"` adds latency without proportional quality gain. `"high"` caps the reasoning budget, producing the same output faster. |
+
+**Source:** [Battle Agent Prompt research](../deepseek-battle-agent-prompt/README.md) — 12k-line comparative session profiling Flash and Pro behavioral patterns.
+
+### Workflow strategies
+
+Two complementary patterns emerged from using both models with the same `custom.md`:
+
+**A. Flash-first** — the default for day-to-day work. Flash handles exploration, routine tasks, and first proposals. Escalate to Pro when the output feels superficial, the task touches security, or multiple coordinated changes are involved. The operator decides when to escalate — Flash does not self-escalate (documented closure bias).
+
+**B. Pro-first** — for greenfield or unfamiliar tasks. Pro investigates, plans, and establishes the conceptual framework. Once the plan is mature, Flash inherits the validated context and executes concrete tasks. This prevents Flash from locking in a suboptimal architecture before Pro can evaluate it. No manual handoffs: both models share the same history and `custom.md`.
+
+**When to escalate back to Pro:** Flash starts giving the same answer to different questions (flattening/omissions), or the task involves implicit design decisions (new APIs, architecture changes, system integrations). Mechanical tasks (CRUD, reports, localized refactors) can sustain more Flash turns without degradation.
+
+**Source:** [Battle Agent Prompt research](../deepseek-battle-agent-prompt/README.md) — profiles, chaining strategy, and daily workflow section.
 
 > **Caveat: Switching models with different context sizes may trigger
 > compaction.** Models with the same architecture (e.g., DeepSeek V4 Flash
@@ -353,3 +395,5 @@ the system enforces.
 6. **Prefix fatigue.** In long sessions with many LOCK turns, `[Analysis]` at the start of every response becomes visual noise. Consider omitting the prefix after the first few turns if the model has already demonstrated compliance.
 
 7. **No UI indicator.** OpenCode's Plan mode changes the prompt color to yellow with a "plan" badge. Control flags have no visual indicator. Everything depends on the suffix and the response prefix. A plugin that detects the flag and shows the mode in the UI would be a natural complement.
+
+8. **Shared prompt overhead in reasoning phase.** When both Senior and Junior share the same `custom.md`, Pro processes sections it does not need — control flags, anti-closure rules, deflexion mitigations (~27% of the prompt). With `reasoningEffort: "high"`, this overhead is bounded (~4096 reasoning tokens). If Pro usage exceeds ~40% of interactions, consider splitting to `custom-senior.md` (stripped of Flash-only rules) + `custom-junior.md` for better reasoning efficiency. The trade-off is maintaining two prompts vs. running Pro with a leaner one. See [Battle Agent Prompt](../deepseek-battle-agent-prompt/README.md) for which rules apply to which model.
