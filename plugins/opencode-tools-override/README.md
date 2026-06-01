@@ -65,7 +65,7 @@ For `task` and `skill` tools, only the auto-generated part remains.
 | `uninstall` | Remove the symlink (does not touch `overrides/`) |
 | `capture` | Download tools for the installed version → `ref/` |
 | `fetch` | Download tools from the latest release → `last/` |
-| `update` | Fetch + diff. Review changes then run `promote` manually. |
+| `update` | Fetch + diff. Auto-promotes if no content changes, otherwise prompts for approval. |
 | `diff` | Compare `ref/` vs `last/` (auto `--impact` if overrides exist) |
 | `diff --impact` | Only changes affecting tools that have an override |
 | `diff --all` | Full diff of all changes (skip auto-impact) |
@@ -75,12 +75,13 @@ For `task` and `skill` tools, only the auto-generated part remains.
 
 ### Workflow for a new OpenCode version
 
-Quick review (fetch + diff):
+Quick review:
 
 ```bash
 ./opencode-tools-override.sh update
-# review the changes displayed
-./opencode-tools-override.sh promote            # adopt if satisfied
+#   No content changes → auto-promotes (fast path)
+#   Content changes    → shows diff, run promote manually after review
+./opencode-tools-override.sh status             # confirm ref/ is current
 ```
 
 Manual (full control):

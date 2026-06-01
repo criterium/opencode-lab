@@ -318,30 +318,36 @@ promote() {
 }
 
 update() {
-  # Step 1: fetch latest; skip if nothing new
-  local last_ver_before
-  last_ver_before="$(read_version_file "$TOOLS_LAST")"
-
+  # Step 1: fetch latest (skips if last/ is already current)
   fetch
 
-  local last_ver_after
-  last_ver_after="$(read_version_file "$TOOLS_LAST")"
-  if [[ "$last_ver_before" == "$last_ver_after" ]] && [[ "$last_ver_before" != "-" ]]; then
-    info "Already up to date (last/ unchanged)."
+  # Step 2: compare ref/ vs last/ versions
+  local ref_ver last_ver
+  ref_ver="$(read_version_file "$TOOLS_REF")"
+  last_ver="$(read_version_file "$TOOLS_LAST")"
+
+  if [[ "$ref_ver" == "$last_ver" ]]; then
+    info "Already up to date (ref/ matches last/)."
     return 0
   fi
 
-  # Step 2: show diff
   echo ""
+  info "ref/ ($ref_ver) differs from last/ ($last_ver)."
+  echo ""
+
+  # Step 3: show diff
   diff --all
 
-  # Step 3: prompt to promote only if there are actual changes
+  # Step 4: decide whether to auto-promote or prompt
   local core_output
   core_output="$(_diff_core "$TOOLS_REF" "$TOOLS_LAST")"
 
   if [[ -n "$core_output" ]]; then
     echo ""
     info "Run '${BOLD}promote${NC}' to adopt the new version (last/ → ref/)."
+  else
+    # No content differences — safe to promote silently
+    promote
   fi
 }
 
@@ -556,18 +562,24 @@ help() {
   echo "  ${GREEN}uninstall${NC}  Remove the plugin symlink (does not touch overrides/)"
   echo "  ${GREEN}capture${NC}    Download tool descriptions for the installed version (opencode --version)"
   echo "  ${GREEN}fetch${NC}      Download tools from the latest GitHub release → last/"
-  echo "  ${GREEN}update${NC}     Fetch + diff. Review changes then run promote manually"
+  echo "  ${GREEN}update${NC}     Fetch + diff. Auto-promotes if no content changes, otherwise prompts for approval"
   echo "  ${GREEN}diff${NC}       Compare ref/ vs last/ (use --all for full diff, --impact for overrides only)"
   echo "  ${GREEN}promote${NC}    Copy last/ → ref/ (after verifying compatibility)"
   echo "  ${GREEN}status${NC}     Show versions, plugin status, and overrides"
   echo "  ${GREEN}help${NC}       This help text"
   echo ""
   echo "${BOLD}Examples:${NC}"
-  echo "  opencode-tools-override.sh fetch"
-  echo "  opencode-tools-override.sh update"
-  echo "  opencode-tools-override.sh diff"
-  echo "  opencode-tools-override.sh diff --impact"
-  echo "  opencode-tools-override.sh diff --all"
+  echo "  opencode-tools-override.sh init          # First-time setup (creates dirs + capture)"
+  echo "  opencode-tools-override.sh install       # Enable plugin (symlink)"
+  echo "  opencode-tools-override.sh capture       # Download tools matching current --version"
+  echo "  opencode-tools-override.sh fetch          # Download latest tools from GitHub"
+  echo "  opencode-tools-override.sh update         # Fetch + diff; auto-promote if safe"
+  echo "  opencode-tools-override.sh diff           # Show ref/ vs last/ differences"
+  echo "  opencode-tools-override.sh diff --impact  # Only changes affecting overrides"
+  echo "  opencode-tools-override.sh diff --all     # Full diff, no auto-filtering"
+  echo "  opencode-tools-override.sh promote        # Copy last/ → ref/"
+  echo "  opencode-tools-override.sh status         # Show versions, plugin, overrides"
+  echo "  opencode-tools-override.sh uninstall     # Remove plugin symlink"
   echo ""
   echo "${BOLD}Files:${NC}"
   echo "  $PLUGIN_SRC"
