@@ -61,6 +61,24 @@ thinking to perform. Includes a ready-to-use prompt template that
 can be appended to any custom prompt file and is portable across
 harnesses.
 
+### [DeepSeek V4 Flash vs Pro — Agent Prompt Battle](research/deepseek-battle-agent-prompt/README.md)
+
+Compares DeepSeek V4 Flash (Junior) and DeepSeek V4 Pro (Senior)
+as coding agents using the same custom prompt. Documents behavioral
+profiles (Flash: broad sweep, closure impatience, deflection under
+criticism; Pro: tunnel vision, security detection, multi-step tracking),
+a decision tree for model selection, a Flash→Pro chaining strategy,
+and 6 prompt rules derived from cross-model analysis.
+
+### [DeepSeek V4 Flash vs Pro — Compaction](research/deepseek-battle-compaction/README.md)
+
+Compares both models as context compaction models in OpenCode.
+Demonstrates that Flash produces better results 4× faster and 13×
+cheaper than Pro. Includes the "reasoning vs extraction" hypothesis,
+model profiles (tunnel effect investigator vs wide-spectrum explorer),
+escape mechanisms of both models, prompt tips per model, and the finding
+that identity preservation trumps evidence in both.
+
 ### [Skill Description Leak](research/skill-desc-leak/README.md)
 
 Investigates how skill descriptions automatically enter the system
