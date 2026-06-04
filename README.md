@@ -61,6 +61,17 @@ thinking to perform. Includes a ready-to-use prompt template that
 can be appended to any custom prompt file and is portable across
 harnesses.
 
+### [DeepSeek V4 Flash Determinism](research/deepseek-v4-flash-determinism/README.md)
+
+Three experiments measuring LLM determinism on analytical tasks:
+single-prompt replicates (10×, σ=0.51), chained forks (3 branches,
+22-33% agreement), and cross-model evaluation (4 models, 8 questions).
+Reports a Global Determinism Index of 0.59 (poorly deterministic) and
+shows that determinism depends on task granularity — convergence on
+coarse ranking, divergence on fine scoring. Documents the majority
+voting paradox (correlated bias makes consensus less reliable) and
+6 mitigation strategies including multi-model orchestration.
+
 ### [DeepSeek V4 Flash vs Pro — Agent Prompt Battle](research/deepseek-battle-agent-prompt/README.md)
 
 Compares DeepSeek V4 Flash (Junior) and DeepSeek V4 Pro (Senior)
@@ -78,6 +89,17 @@ cheaper than Pro. Includes the "reasoning vs extraction" hypothesis,
 model profiles (tunnel effect investigator vs wide-spectrum explorer),
 escape mechanisms of both models, prompt tips per model, and the finding
 that identity preservation trumps evidence in both.
+
+### [OpenCode Zen Free Models — Evaluation](research/opencod-zen-free-models/README.md)
+
+Evaluates 4 free models (DeepSeek V4 Flash Free, MiMo V2.5 Free,
+MiniMax M3 Free, Nemotron 3 Super Free) as analytical evaluators
+on 8 sequential questions over 343 KB of technical documents.
+Scores each model on per-question quality, global coherence, final
+report, operational fluency, and theoretical cost. DeepSeek leads
+(9.14) with zero errors and stable σ=0.35; MiMo is fastest (213s)
+but has format errors; MiniMax is 3.7× slower; Nemotron fails
+critically (4.29). Includes cross-validation with 10 replicates.
 
 ### [Skill Description Leak](research/skill-desc-leak/README.md)
 
