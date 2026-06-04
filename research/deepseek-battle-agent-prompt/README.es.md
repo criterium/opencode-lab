@@ -32,7 +32,7 @@ Afinar un agent prompt no es trabajo de un día, pero cada sesión revela algo q
 
 **2. Lo que aprendimos sobre los propios modelos.** Esas mismas ~12k líneas son un registro forense de cómo piensa cada modelo. Analizarlas reveló perfiles de comportamiento —fortalezas, debilidades, patrones— que trascienden el experimento y aplican a cualquier tarea de programación. Este documento es la síntesis de ambos hallazgos.
 
-Si solo quieres la guía práctica, salta al [árbol de decisión](#árbol-de-decisión-qué-modelo-usar). Si quieres aplicar estos hallazgos, copia las [6 reglas](#cambios-aplicados-a-custommd) a tu agent prompt y usa el árbol para decidir qué modelo activar. Para entender los fundamentos: [API Call Anatomy](https://github.com/criterium/opencode-lab/blob/main/research/api-call-anatomy/README.md), [Control Flags vs Plan/Build](https://github.com/criterium/opencode-lab/blob/main/research/control-flags-vs-plan-build/README.md), [Context Dump](https://github.com/criterium/opencode-lab/blob/main/research/context-dump/README.md).
+Si solo quieres la guía práctica, salta al [árbol de decisión](#árbol-de-decisión-qué-modelo-usar). Si quieres aplicar estos hallazgos, copia las [6 reglas](#cambios-aplicados-a-custommd) a tu agent prompt y usa el árbol para decidir qué modelo activar. Para entender los fundamentos: [API Call Anatomy](https://github.com/criterium/opencode-lab/blob/main/research/api-call-anatomy/README.es.md), [Control Flags vs Plan/Build](https://github.com/criterium/opencode-lab/blob/main/research/control-flags-vs-plan-build/README.es.md), [Context Dump](https://github.com/criterium/opencode-lab/blob/main/research/context-dump/README.es.md).
 
 ---
 
@@ -292,7 +292,7 @@ Dos variantes según el punto de partida:
 - La tarea requiere decisiones de diseño no explicitadas (nuevas APIs, cambios de arquitectura, integraciones). En estos casos, escalar preventivamente cada 10-15 turnos.
 - Tareas mecánicas (CRUD, informes, refactors localizados) soportan más turnos de Flash sin degradación.
 
-La escalada la decide el operador, no el modelo: Flash no auto-escala por su sesgo de cierre. Para la configuración práctica (agent switching Senior/Junior en lugar de Plan/Build en OpenCode), ver [Control Flags vs Plan/Build](https://github.com/criterium/opencode-lab/blob/main/research/control-flags-vs-plan-build/README.md).
+La escalada la decide el operador, no el modelo: Flash no auto-escala por su sesgo de cierre. Para la configuración práctica (agent switching Senior/Junior en lugar de Plan/Build en OpenCode), ver [Control Flags vs Plan/Build](https://github.com/criterium/opencode-lab/blob/main/research/control-flags-vs-plan-build/README.es.md).
 
 ---
 
@@ -529,6 +529,6 @@ Desde OpenCode solo controlamos `model` y `reasoningEffort`. La observación con
 
 | Documento | Contenido |
 |-----------|-----------|
-| [API Call Anatomy](https://github.com/criterium/opencode-lab/blob/main/research/api-call-anatomy/README.md) | Las tres capas que gobiernan un modelo y cómo OpenCode ensambla el system prompt |
-| [Control Flags vs Plan/Build](https://github.com/criterium/opencode-lab/blob/main/research/control-flags-vs-plan-build/README.md) | Por qué los flags de intención reemplazan al modo Plan nativo |
-| [Context Dump](https://github.com/criterium/opencode-lab/blob/main/research/context-dump/README.md) | Cómo extraer el system prompt de cualquier harness |
+| [API Call Anatomy](https://github.com/criterium/opencode-lab/blob/main/research/api-call-anatomy/README.es.md) | Las tres capas que gobiernan un modelo y cómo OpenCode ensambla el system prompt |
+| [Control Flags vs Plan/Build](https://github.com/criterium/opencode-lab/blob/main/research/control-flags-vs-plan-build/README.es.md) | Por qué los flags de intención reemplazan al modo Plan nativo |
+| [Context Dump](https://github.com/criterium/opencode-lab/blob/main/research/context-dump/README.es.md) | Cómo extraer el system prompt de cualquier harness |

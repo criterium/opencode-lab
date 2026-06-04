@@ -19,6 +19,8 @@ and reference material to take advantage of that flexibility.
 
 Not affiliated with the OpenCode project.
 
+Also available in [Spanish](README.es.md) — all research documents have been translated.
+
 ---
 
 ## Research
