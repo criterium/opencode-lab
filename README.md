@@ -92,6 +92,14 @@ model profiles (tunnel effect investigator vs wide-spectrum explorer),
 escape mechanisms of both models, prompt tips per model, and the finding
 that identity preservation trumps evidence in both.
 
+### [Memory System for Coding Assistants](research/memory-system/README.md)
+
+A manual, flat-file memory system for AI coding assistants. Uses `>>`/`<<`
+operators to save and load context on demand — zero tokens until invoked.
+Compares three approaches: OpenCode's AGENTS.md, an autonomous model-driven
+memory, and this human-in-control alternative. Documents design principles,
+workflow, operators, scopes, and a comparative analysis across 17 dimensions.
+
 ### [OpenCode Zen Free Models — Evaluation](research/opencod-zen-free-models/README.md)
 
 Evaluates 4 free models (DeepSeek V4 Flash Free, MiMo V2.5 Free,

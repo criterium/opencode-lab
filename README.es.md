@@ -92,6 +92,15 @@ mecanismos de escape de ambos modelos, consejos de prompt por modelo y el
 hallazgo de que la preservación de identidad prevalece sobre la evidencia
 en ambos.
 
+### [Sistema de Memoria para Asistentes de Código](research/memory-system/README.es.md)
+
+Un sistema de memoria manual con archivos planos para asistentes de código
+con IA. Usa los operadores `>>`/`<<` para guardar y cargar contexto bajo
+demanda — cero tokens hasta invocarlo. Compara tres enfoques: AGENTS.md de
+OpenCode, una memoria autónoma gestionada por el modelo, y esta alternativa
+con control humano. Documenta principios de diseño, flujo de trabajo,
+operadores, scopes y un análisis comparativo en 17 dimensiones.
+
 ### [OpenCode Zen Free Models — Evaluación](research/opencod-zen-free-models/README.es.md)
 
 Evalúa 4 modelos gratuitos (DeepSeek V4 Flash Free, MiMo V2.5 Free,
