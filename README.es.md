@@ -101,6 +101,15 @@ OpenCode, una memoria autónoma gestionada por el modelo, y esta alternativa
 con control humano. Documenta principios de diseño, flujo de trabajo,
 operadores, scopes y un análisis comparativo en 17 dimensiones.
 
+### [OpenCode Zen Free MiMo Flash — Análisis Comparativo](research/opencode-zen-free-mimo-flash/README.es.md)
+
+Compara MiMo V2.5 Free y DeepSeek V4 Flash Free en 7 tareas basadas en
+prompts evaluando adherencia a instrucciones, precisión en generación de
+código, cumplimiento de estructura de salida y perfiles de comportamiento.
+Reporta que Flash gana 5/7 preguntas con 81.3% de cumplimiento de
+`custom.md` frente al 37.5% de MiMo. Basado en sesiones reales con
+OpenCode, no en benchmarks estáticos.
+
 ### [OpenCode Zen Free Models — Evaluación](research/opencod-zen-free-models/README.es.md)
 
 Evalúa 4 modelos gratuitos (DeepSeek V4 Flash Free, MiMo V2.5 Free,
@@ -111,6 +120,16 @@ operativa y coste teórico. DeepSeek lidera (9.14) con cero errores y
 σ=0.35 estable; MiMo es el más rápido (213s) pero tiene errores de formato;
 MiniMax es 3.7× más lento; Nemotron falla críticamente (4.29). Incluye
 validación cruzada con 10 réplicas.
+
+### [Reasoning Effort en DeepSeek V4 y OpenCode](research/opencode-deepseek-v4-reasoning-effort/README.es.md)
+
+Documenta el flujo del parámetro `reasoning_effort` desde la API de
+DeepSeek V4 hasta su integración con OpenCode. Revela que DeepSeek
+detecta agentes complejos mediante señales multifactoriales (tools +
+cabecera `x-session-affinity`), forzando `"max"` reasoning effort
+independientemente del valor configurado en canales Go y Zen. Incluye
+mapa de canales, guía práctica, procedimiento de verificación empírica
+y análisis de drop-thinking.
 
 ### [Filtración de Descripciones de Skill](research/skill-desc-leak/README.es.md)
 

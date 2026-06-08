@@ -67,10 +67,11 @@ Para las tools `task` y `skill`, solo queda la parte generada automáticamente.
 | `uninstall` | Elimina el symlink (no toca `overrides/`) |
 | `capture` | Descarga las tools de la versión instalada → `ref/` |
 | `fetch` | Descarga las tools del último release → `last/` |
-| `update` | Fetch + diff. Promociona automáticamente si no hay cambios de contenido; si los hay, pide aprobación. |
+| `update` | Fetch + diff. Promociona automáticamente si no hay cambios de contenido; si los hay, muestra el diff e indica ejecutar `promote` manualmente. |
 | `diff` | Compara `ref/` vs `last/` (auto `--impact` si existen overrides) |
 | `diff --impact` | Solo cambios que afectan a tools que tienen un override |
 | `diff --all` | Diff completo de todos los cambios (omite auto-impact) |
+| `diff --help` | Muestra la ayuda de diff |
 | `promote` | Copia `last/` → `ref/` (valida y adopta) |
 | `status` | Muestra versiones, estado del plugin y overrides activos |
 | `help` | Ayuda completa |
@@ -107,8 +108,8 @@ Todas las rutas son relativas al directorio del plugin
 | `opencode-tools-override.sh` | Script de gestión (init, install, capture, ...) |
 | `~/.config/opencode/plugin/opencode-tools-override.ts` | Symlink → `.ts` en el repositorio |
 | `overrides/` | Tus archivos `.txt` con descripciones personalizadas |
-| `ref/` | Instantánea de las descripciones originales para la versión actual |
-| `last/` | Descripciones descargadas del último release para comparación |
+| `ref/` | Instantánea de las descripciones originales para la versión actual (puede incluir subdirectorios como `shell/`) |
+| `last/` | Descripciones descargadas del último release para comparación (misma estructura que `ref/`) |
 | `debug.log` | Log de ejecución (solo se escribe cuando `OPENCODE_TOOLS_OVERRIDE_DEBUG=1`) |
 
 ## Depuración

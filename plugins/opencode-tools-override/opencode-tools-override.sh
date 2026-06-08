@@ -77,6 +77,17 @@ read_version_file() {
   fi
 }
 
+_version_ge() {
+  local v1="$1" v2="$2"
+  [[ "$v1" == "-" ]] && v1="0.0.0"
+  [[ "$v2" == "-" ]] && v2="0.0.0"
+  [[ -z "$v1" ]] && v1="0.0.0"
+  [[ -z "$v2" ]] && v2="0.0.0"
+  # sort -V ascending, -C checks input is sorted
+  # Returns 0 (true) if v1 >= v2
+  printf '%s\n%s\n' "$v2" "$v1" | sort -C -V 2>/dev/null
+}
+
 # ─── Download helper ──────────────────────────────────────────────────────────
 # Shared logic used by capture() and fetch() to download tool descriptions
 # from the OpenCode GitHub repository via the Contents API.
@@ -95,11 +106,13 @@ _download_tools() {
   fi
 
   mkdir -p "$dest"
+  # Clean destination so stale files from prior versions don't linger
+  find "$dest" -mindepth 1 -maxdepth 1 ! -name '.version' -exec rm -rf {} +
 
   local tmp_json
   tmp_json="$(mktemp)"
 
-  if ! curl -sfL "$api_url" -o "$tmp_json"; then
+  if ! curl -sfL --retry 2 --retry-delay 3 "$api_url" -o "$tmp_json"; then
     err "Network error querying GitHub API."
     rm -f "$tmp_json"
     exit 1
@@ -108,7 +121,7 @@ _download_tools() {
   # .txt files at the root of tool/
   jq -r '.[] | select(.type == "file" and (.name | endswith(".txt"))) | "\(.name)\t\(.download_url)"' "$tmp_json" | \
     while IFS=$'\t' read -r name url; do
-      curl -sfL "$url" -o "$dest/$name"
+      curl -sfL --retry 2 --retry-delay 3 "$url" -o "$dest/$name"
     done
 
   # Subdirectories (shell/)
@@ -116,11 +129,11 @@ _download_tools() {
     local sub_url="$api_base/$dir?ref=$tag"
     local sub_json
     sub_json="$(mktemp)"
-    if curl -sfL "$sub_url" -o "$sub_json"; then
+    if curl -sfL --retry 2 --retry-delay 3 "$sub_url" -o "$sub_json"; then
       mkdir -p "$dest/$dir"
       jq -r '.[] | select(.type == "file" and (.name | endswith(".txt"))) | "\(.name)\t\(.download_url)"' "$sub_json" | \
         while IFS=$'\t' read -r name url; do
-          curl -sfL "$url" -o "$dest/$dir/$name"
+          curl -sfL --retry 2 --retry-delay 3 "$url" -o "$dest/$dir/$name"
         done
     fi
     rm -f "$sub_json"
@@ -242,6 +255,8 @@ capture() {
   count="$(find "$TOOLS_REF" -name '*.txt' | wc -l)"
   info "ref updated: $count descriptions, version $version"
   dim "  $TOOLS_REF/"
+  echo ""
+  status
 }
 
 fetch() {
@@ -304,8 +319,21 @@ promote() {
     exit 1
   fi
 
-  local last_ver
+  local ref_ver last_ver
+  ref_ver="$(read_version_file "$TOOLS_REF")"
   last_ver="$(read_version_file "$TOOLS_LAST")"
+
+  # Guard: do not promote an older version over ref/
+  if [[ "$ref_ver" != "-" ]] && ! _version_ge "$last_ver" "$ref_ver"; then
+    err "Cannot promote: last/ ($last_ver) is older than ref/ ($ref_ver)."
+    err "Run 'capture' to sync ref/ with the installed version."
+    exit 1
+  fi
+
+  if [[ "$ref_ver" == "$last_ver" ]]; then
+    info "ref/ and last/ are both at version $last_ver. Nothing to promote."
+    return 0
+  fi
 
   info "Promoting last/ → ref/ ($last_ver)"
 
@@ -352,7 +380,9 @@ update() {
 }
 
 _has_overrides() {
-  ls -1 "$OVERRIDES_DIR"/*.txt &>/dev/null
+  local f
+  f="$(compgen -G "$OVERRIDES_DIR"/*.txt 2>/dev/null)"
+  [[ -n "$f" ]]
 }
 
 # Core diff logic shared by diff() and update().
@@ -377,7 +407,8 @@ _diff_core() {
     elif [[ ! -f "$file_a" ]]; then
       echo "A $rel"
     elif ! cmp -s "$file_a" "$file_b"; then
-      if [[ -f "$OVERRIDES_DIR/$tool_id.txt" ]]; then
+      local tool_base="${tool_id##*/}"
+      if [[ -f "$OVERRIDES_DIR/$tool_base.txt" ]]; then
         echo "C! $rel"
       else
         echo "C $rel"
@@ -545,48 +576,56 @@ help() {
   echo ""
   header "opencode-tools-override.sh — Tool Description Override Plugin Manager"
   echo ""
-  echo "Plugin that overrides OpenCode tool descriptions with plain"
-  echo ".txt files in overrides/. The plugin finds the overrides/"
-  echo "directory automatically next to its .ts file in the repo."
+  echo "Sobrescribe las descripciones de herramientas de OpenCode con archivos"
+  echo ".txt propios. Las descripciones de referencia se descargan de GitHub"
+  echo "y los overrides/ se aplican al arrancar OpenCode."
   echo ""
-  echo "Uses the 'tool.definition' hook of the plugin system."
+  echo "${BOLD}Flujo normal (día a día):${NC}"
   echo ""
-  echo "${BOLD}Important:${NC}"
-  echo "  Overrides are cached in memory when OpenCode starts."
-  echo "  If you create or modify a .txt file in overrides/, the change"
-  echo "  will NOT take effect until you restart OpenCode."
+  echo "  ${GREEN}capture${NC}  1. Descarga en ref/ las tools de la versión instalada"
+  echo "                  (opencode --version). Se usa al actualizar OpenCode"
+  echo "                  o para resetear ref/ a un estado conocido."
+  echo "  ${GREEN}status${NC}   2. Muestra versiones, plugin, overrides activos."
+  echo "                  Confirma que todo está en orden tras capture."
+  echo "  ${GREEN}update${NC}   3. Un solo paso: fetch (descarga last/ desde la"
+  echo "                  última release de GitHub) + diff + auto-promote"
+  echo "                  (copia last/ → ref/) si no hay cambios de contenido."
+  echo "                  Si hay cambios, muestra el diff y pide confirmación."
   echo ""
-  echo "${BOLD}Commands:${NC}"
-  echo "  ${GREEN}init${NC}       Set up the environment: create directories and capture ref/"
-  echo "  ${GREEN}install${NC}    Create plugin symlink (OpenCode auto-discovery)"
-  echo "  ${GREEN}uninstall${NC}  Remove the plugin symlink (does not touch overrides/)"
-  echo "  ${GREEN}capture${NC}    Download tool descriptions for the installed version (opencode --version)"
-  echo "  ${GREEN}fetch${NC}      Download tools from the latest GitHub release → last/"
-  echo "  ${GREEN}update${NC}     Fetch + diff. Auto-promotes if no content changes, otherwise prompts for approval"
-  echo "  ${GREEN}diff${NC}       Compare ref/ vs last/ (use --all for full diff, --impact for overrides only)"
-  echo "  ${GREEN}promote${NC}    Copy last/ → ref/ (after verifying compatibility)"
-  echo "  ${GREEN}status${NC}     Show versions, plugin status, and overrides"
-  echo "  ${GREEN}help${NC}       This help text"
+  echo "${BOLD}Comandos:${NC}"
   echo ""
-  echo "${BOLD}Examples:${NC}"
-  echo "  opencode-tools-override.sh init          # First-time setup (creates dirs + capture)"
-  echo "  opencode-tools-override.sh install       # Enable plugin (symlink)"
-  echo "  opencode-tools-override.sh capture       # Download tools matching current --version"
-  echo "  opencode-tools-override.sh fetch          # Download latest tools from GitHub"
-  echo "  opencode-tools-override.sh update         # Fetch + diff; auto-promote if safe"
-  echo "  opencode-tools-override.sh diff           # Show ref/ vs last/ differences"
-  echo "  opencode-tools-override.sh diff --impact  # Only changes affecting overrides"
-  echo "  opencode-tools-override.sh diff --all     # Full diff, no auto-filtering"
-  echo "  opencode-tools-override.sh promote        # Copy last/ → ref/"
-  echo "  opencode-tools-override.sh status         # Show versions, plugin, overrides"
-  echo "  opencode-tools-override.sh uninstall     # Remove plugin symlink"
+  echo "  ${GREEN}capture${NC}    Descarga tools de la versión instalada a ref/"
+  echo "  ${GREEN}fetch${NC}      Descarga tools de la última release a last/"
+  echo "  ${GREEN}diff${NC}       Compara ref/ vs last/ (--all diff completo, --impact solo overrides)"
+  echo "  ${GREEN}promote${NC}    Copia last/ → ref/ (solo si last/ >= ref/)"
+  echo "  ${GREEN}update${NC}     fetch + diff + auto-promote (si no hay cambios de contenido)"
+  echo "  ${GREEN}status${NC}     Muestra versiones, plugin y overrides activos"
+  echo "  ${GREEN}init${NC}       Primera configuración: crea directorios + capture"
+  echo "  ${GREEN}install${NC}    Instala el plugin (symlink en ~/.config/opencode)"
+  echo "  ${GREEN}uninstall${NC}  Elimina el symlink del plugin"
   echo ""
-  echo "${BOLD}Files:${NC}"
+  echo "${BOLD}Notas:${NC}"
+  echo "  • Los overrides se cachean en memoria al arrancar OpenCode."
+  echo "    Crear o modificar un .txt en overrides/ requiere reiniciar."
+  echo "  • promote rechaza sobrescribir ref/ con una versión anterior."
+  echo "  • capture y fetch descargan desde GitHub (requieren conexión)."
+  echo "  • diff, promote y update requieren que existan tanto ref/ como last/."
+  echo ""
+  echo "${BOLD}Estructura de directorios:${NC}"
   echo "  $PLUGIN_SRC"
-  echo "  $PLUGIN_DEST  (symlink)"
-  echo "  $OVERRIDES_DIR/     (your overrides)"
-  echo "  $TOOLS_REF/"
-  echo "  $TOOLS_LAST/"
+  echo "  $OVERRIDES_DIR/     (tus overrides — un .txt por herramienta)"
+  echo "  $TOOLS_REF/         (tools de la versión actual de OpenCode)"
+  echo "  $TOOLS_LAST/        (tools de la última release en GitHub)"
+  echo ""
+  echo "${BOLD}Ejemplo completo:${NC}"
+  echo "  opencode-tools-override.sh init       # Primera vez"
+  echo "  opencode-tools-override.sh install    # Activar plugin"
+  echo "  # Crear .txt en overrides/ para las tools que quieras personalizar"
+  echo "  opencode-tools-override.sh status     # Ver estado"
+  echo "  # ... tiempo después, al salir una nueva versión de OpenCode ..."
+  echo "  opencode-tools-override.sh capture    # Sincronizar ref/ con versión instalada"
+  echo "  opencode-tools-override.sh update     # Actualizar a la última versión"
+  echo "  opencode-tools-override.sh status     # Verificar resultado"
   echo ""
 }
 

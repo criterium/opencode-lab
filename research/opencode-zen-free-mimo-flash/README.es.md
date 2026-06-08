@@ -9,10 +9,10 @@
 **Tarea asignada a ambos modelos**: analizar cambios entre v1.15.13 y v1.16.0 de opencode, partiendo de `/tmp/opencode-src` y `/tmp/opencode-src-bak`, foco en skill discovery y file-based agents.
 
 **Fuentes**:
-- `/home/antonio/Proyectos/IA/opencode/session-ses_mimo.md` (4200 líneas)
-- `/home/antonio/Proyectos/IA/opencode/session-ses_flash.md` (7112 líneas)
-- `/home/antonio/Proyectos/IA/opencode/memory/opencode-source-research.md` (research previa del usuario, consultada solo por Flash)
-- `/home/antonio/Proyectos/IA/opencode/research/skill-desc-leak/README.md` (research de skill-desc-leak, referenciada por ambos)
+- `session-ses_mimo.md` (dump de sesión, 4200 líneas)
+- `session-ses_flash.md` (dump de sesión, 7112 líneas)
+- `memory/opencode-source-research.md` (research previa del usuario, consultada solo por Flash)
+- `research/skill-desc-leak/README.md` (research de skill-desc-leak, referenciada por ambos)
 
 **Metodología**: análisis directo de los archivos de sesión, sin delegación a sub-agentes. El preludio común (líneas 1-985) se excluye; solo se comparan los turnos post-fork, agrupados por pregunta de usuario.
 
@@ -111,10 +111,10 @@ Este análisis se basa en una técnica de evaluación que aprovecha una caracter
 
 ### Cómo funciona el forkeo en este caso
 
-El usuario (antonio) ejecutó una sesión larga con un modelo inicial (Nemotron 3 Ultra Free, según la preludio de las sesiones), y al llegar a un punto de fork (línea 985 de ambas sesiones), continuó la misma conversación con dos modelos distintos:
+El usuario ejecutó una sesión larga con un modelo inicial (Nemotron 3 Ultra Free, según la preludio de las sesiones), y al llegar a un punto de fork (línea 985 de ambas sesiones), continuó la misma conversación con dos modelos distintos:
 
-- **Sesión Mimo** (`fe6OaAlD`): continuación con `mimo-v2.5-free` (Xiaomi MiMo V2.5, etiquetado como "MiMo V2.5 Free").
-- **Sesión Flash** (`BpCtZbzD`): continuación con `opencode/deepseek-v4-flash-free`.
+- **Sesión Mimo** (`ses_mimo`): continuación con `mimo-v2.5-free` (Xiaomi MiMo V2.5, etiquetado como "MiMo V2.5 Free").
+- **Sesión Flash** (`ses_flash`): continuación con `opencode/deepseek-v4-flash-free`.
 
 Ambas sesiones tienen:
 - 985 líneas idénticas: carga de memoria (`memory.md`), 4 preguntas de setup con Nemotron, y prompt inicial del usuario.
@@ -130,7 +130,7 @@ A partir del fork, los dos modelos divergen: cada uno produce su propia cadena d
 
 2. **Contexto común verificado**: las 4 preguntas iniciales idénticas (Nemotron) y la carga de memoria (`memory.md`) son las mismas. Cualquier modelo hereda el mismo system prompt efectivo.
 
-3. **Reproducibilidad**: las sesiones tienen IDs únicos (`fe6OaAlD`, `BpCtZbzD`) que permiten recuperar el volcado exacto. La traza es auditable.
+3. **Reproducibilidad**: las sesiones tienen IDs únicos (`ses_mimo`, `ses_flash`) que permiten recuperar el volcado exacto. La traza es auditable.
 
 4. **Coste controlado**: ambos modelos en el mismo tier (free) o en tiers diferentes pero conocidos, lo que permite análisis comparativo de eficiencia.
 
@@ -227,12 +227,12 @@ Flash supera a Mimo de forma categórica en 5 de 7 preguntas, empata en 1, Mimo 
 
 Datos extraídos de `research/opencode-zen-free-mimo-flash/costes.txt` (338 líneas, formato TSV con 67 registros totales en 4 sesiones distintas). Filtrado estricto a las dos sesiones evaluadas:
 
-- **Flash**: `model == "deepseek-v4-flash-free"` AND `session == "BpCtZbzD"` (31 llamadas)
-- **Mimo**: `model == "mimo-v2.5-free"` AND `session == "fe6OaAlD"` (27 llamadas)
+- **Flash**: `model == "deepseek-v4-flash-free"` AND `session == "ses_flash"` (31 llamadas)
+- **Mimo**: `model == "mimo-v2.5-free"` AND `session == "ses_mimo"` (27 llamadas)
 
 ### Datos crudos por sesión
 
-**Sesión BpCtZbzD — `deepseek-v4-flash-free` (Flash)**
+**Sesión ses_flash — `deepseek-v4-flash-free` (Flash)**
 - 31 llamadas
 - Input total: 1,827,186 tokens
 - Output total: 17,603 tokens
@@ -244,7 +244,7 @@ Datos extraídos de `research/opencode-zen-free-mimo-flash/costes.txt` (338 lín
 - Output mínimo: 133
 - Coste registrado: $0.0000 (tier free)
 
-**Sesión fe6OaAlD — `mimo-v2.5-free` (Mimo)**
+**Sesión ses_mimo — `mimo-v2.5-free` (Mimo)**
 - 27 llamadas
 - Input total: 1,262,970 tokens
 - Output total: 8,836 tokens
@@ -520,8 +520,8 @@ Lo que cambió: el NUEVO sistema SkillV2 no usa el flag (porque no escanea `.cla
 11. `read /tmp/opencode-src/packages/core/src/config/plugin/agent.ts` (working tree)
 12. `read /tmp/opencode-src/packages/core/test/config/skill.test.ts` (test del nuevo)
 13. `read /tmp/opencode-src/packages/core/test/skill.test.ts` (test del nuevo)
-14. `read /home/antonio/Proyectos/IA/opencode/config/opencode.jsonc` (config del usuario)
-15. `read /home/antonio/Proyectos/IA/opencode/prompt/custom.md` (limit 30)
+14. `read config/opencode.jsonc` (config del usuario)
+15. `read prompt/custom.md` (limit 30)
 16. `bash ls ~/.agents/skills/*/SKILL.md` (verifica estado real del usuario)
 17. `bash ls ~/.agents/skills/opencode-customize/` (verifica)
 
@@ -603,8 +603,8 @@ Puede interferir con el nuestro y los objetivos que buscamos según nuestra rese
 ### Flash (4219-5792, 1572 líneas, 9 turnos, ~78s)
 
 **Tool calls principales**:
-1. **`read /home/antonio/Proyectos/IA/opencode/memory/opencode-source-research.md`** (880 líneas) — consulta la research previa
-2. `read /home/antonio/Proyectos/IA/opencode/research/skill-desc-leak/README.md` (research del usuario)
+1. **`read memory/opencode-source-research.md`** (880 líneas) — consulta la research previa
+2. `read research/skill-desc-leak/README.md` (research del usuario)
 3. `read /tmp/opencode-src/packages/core/src/skill.ts` (working tree)
 4. `read /tmp/opencode-src/packages/core/src/skill/discovery.ts`
 5. `read /tmp/opencode-src/packages/core/src/config/plugin/skill.ts`
@@ -616,8 +616,8 @@ Puede interferir con el nuestro y los objetivos que buscamos según nuestra rese
 11. `read /tmp/opencode-src/packages/core/src/config/agent.ts`
 12. `read /tmp/opencode-src/packages/opencode/src/skill/index.ts` (viejo)
 13. `read /tmp/opencode-src/packages/opencode/src/tool/skill.ts` (viejo)
-14. `read /home/antonio/Proyectos/IA/opencode/config/opencode.jsonc`
-15. `read /home/antonio/Proyectos/IA/opencode/prompt/custom.md` (limit 30)
+14. `read config/opencode.jsonc`
+15. `read prompt/custom.md` (limit 30)
 
 **Conclusión** (líneas 5737-5789):
 

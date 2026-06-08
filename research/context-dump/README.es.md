@@ -156,7 +156,8 @@ bien en un harness, el dump lo captura para que puedas replicarlo en
 otro.
 
 | Objetivo | Prompt(s) |
-|---|---|
+|---|---|---|
+| Investigación del prefijo del proveedor | prompt_0 |
 | Dump de contexto completo | prompt_1 |
 | Análisis de comportamiento | prompt_2 + prompt_3 |
 | Lagunas en datos de entrenamiento | prompt_3 |
@@ -217,8 +218,12 @@ prompt.
 Abre una **sesión nueva única**. Todos los prompts se ejecutan consecutivamente en esa
 misma sesión, uno tras otro.
 
+0. (Opcional) Abre `prompts/prompt_0_prefix.md`, copia todo su contenido y pégalo
+   como el primer mensaje. El modelo escribe el prefix dump y se detiene.
+   Útil para investigar qué inyecta el proveedor antes del system prompt.
+
 1. Abre `prompts/prompt_1_dump.md`, copia todo su contenido y pégalo
-   como el primer mensaje. El modelo escribe el dump y se detiene.
+   como el siguiente mensaje. El modelo escribe el dump y se detiene.
 
 2. Sin cerrar la sesión, abre `prompts/prompt_2_analysis.md`,
    copia todo su contenido y pégalo. El modelo lee el dump y
@@ -237,6 +242,7 @@ disponibles y se adaptan si falta alguna.
 
 | Prompt | Qué hace | Salida |
 |---|---|---|
+| [`prompt_0_prefix.md`](prompts/prompt_0_prefix.md) | Captura el prefijo del proveedor (banners, metadatos, directivas de reasoning effort) antes del system prompt, más el primer heading del system prompt. Incluye autoevaluación de confianza. | `dump.{model}.{YYYYMMDD}/00_context.prefix.md` |
 | [`prompt_1_dump.md`](prompts/prompt_1_dump.md) | Extrae el contexto completo de la llamada API: parámetro system, array tools, array messages y entorno. Produce un dump crudo sin filtrar. | `dump.{model}.{YYYYMMDD}/01_context.dump.md` |
 | [`prompt_2_analysis.md`](prompts/prompt_2_analysis.md) | Lee un dump existente y lo evalúa: fidelidad por sección, detección de rechazos, verificación cruzada de consistencia, evaluación de contaminación, mapeo de personalidad, revisión de PII. | `dump.{model}.{YYYYMMDD}/02_context.analysis.md` |
 | [`prompt_3_self_analysis.md`](prompts/prompt_3_self_analysis.md) | Meta-análisis: separa qué comportamientos provienen del entrenamiento base vs system prompt vs herramientas vs superposiciones. Estructurado por capa con tabla de procedencia. | `dump.{model}.{YYYYMMDD}/03_self_analysis.md` |
@@ -247,6 +253,9 @@ disponibles y se adaptan si falta alguna.
 ### Flujo de trabajo recomendado
 
 ```
+[Phase 0: Prefix research (opcional)]
+  prompt_0_prefix.md   → produce dump.{model}.{YYYYMMDD}/00_context.prefix.md
+
 [Phase 1: Core]
   prompt_1_dump.md    → produce dump.{model}.{YYYYMMDD}/01_context.dump.md
   prompt_2_analysis.md → analiza el dump

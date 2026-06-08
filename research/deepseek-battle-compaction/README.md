@@ -178,7 +178,7 @@ In `opencode.jsonc`:
 
 ```jsonc
 "compaction": {
-  "prompt": "{file:/home/antonio/Proyectos/IA/opencode/prompt/compaction.md}",
+  "prompt": "{file:prompt/compaction.md}",
   "model": "opencode-go/deepseek-v4-flash",
   "tail_turns": 4,
   "preserve_recent_tokens": 25000,

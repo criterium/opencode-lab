@@ -156,7 +156,8 @@ well in one harness, the dump captures it so you can replicate it in
 another.
 
 | Goal | Prompt(s) |
-|---|---|
+|---|---|---|
+| Provider prefix research | prompt_0 |
 | Full context dump | prompt_1 |
 | Behavior analysis | prompt_2 + prompt_3 |
 | Training data gaps | prompt_3 |
@@ -217,8 +218,13 @@ prompt effects.
 Open a **single fresh session**. All prompts run consecutively in that
 same session, one after another.
 
+0. (Optional) Open `prompts/prompt_0_prefix.md`, copy its entire content,
+   and paste it as the first message. The model writes the prefix dump
+   and stops. Useful for researching what the provider injects before
+   the system prompt.
+
 1. Open `prompts/prompt_1_dump.md`, copy its entire content, and paste
-   it as the first message. The model writes the dump and stops.
+   it as the next message. The model writes the dump and stops.
 
 2. Without closing the session, open `prompts/prompt_2_analysis.md`,
    copy its entire content, and paste. The model reads the dump and
@@ -237,6 +243,7 @@ and adapt if something is missing.
 
 | Prompt | What it does | Output |
 |---|---|---|
+| [`prompt_0_prefix.md`](prompts/prompt_0_prefix.md) | Captures the provider prefix (banners, metadata, reasoning directives) before the system prompt, plus the first system prompt heading. Includes confidence self-check. | `dump.{model}.{YYYYMMDD}/00_context.prefix.md` |
 | [`prompt_1_dump.md`](prompts/prompt_1_dump.md) | Extracts the full API call context: system parameter, tools array, messages array, and environment. Produces a raw unfiltered dump. | `dump.{model}.{YYYYMMDD}/01_context.dump.md` |
 | [`prompt_2_analysis.md`](prompts/prompt_2_analysis.md) | Reads an existing dump and evaluates it: per-section faithfulness, refusal detection, consistency cross-check, contamination assessment, personality mapping, PII review. | `dump.{model}.{YYYYMMDD}/02_context.analysis.md` |
 | [`prompt_3_self_analysis.md`](prompts/prompt_3_self_analysis.md) | Meta-analysis: disentangles which behaviors come from base training vs system prompt vs tools vs overlays. Structured by layer with provenance table. | `dump.{model}.{YYYYMMDD}/03_self_analysis.md` |
@@ -247,6 +254,9 @@ and adapt if something is missing.
 ### Recommended workflow
 
 ```
+[Phase 0: Prefix research (optional)]
+  prompt_0_prefix.md   → produces dump.{model}.{YYYYMMDD}/00_context.prefix.md
+
 [Phase 1: Core]
   prompt_1_dump.md    → produces dump.{model}.{YYYYMMDD}/01_context.dump.md
   prompt_2_analysis.md → analyzes the dump
