@@ -105,6 +105,8 @@ Medir y comparar el comportamiento de las variantes `high` y `max` del parámetr
 
 Para ello, una sesión de ~63k tokens sobre esta comparativa se forkeó en 3 ramas. Cada rama usó una combinación distinta (Flash Max, Pro High, Pro Max) y generó una respuesta al mismo prompt. Las 3 respuestas se etiquetaron ciegamente como **Op1**, **Op2**, **Op3**.
 
+> **Nota:** Este objetivo original se diseñó antes de descubrir que DeepSeek fuerza `"max"` en canales `opencode-go/*` al detectar el perfil de agente (P6). Las diferencias observadas entre las ramas no son atribuibles a `reasoningEffort` sino a diferencias de modelo (Flash vs Pro) y al indeterminismo natural. El meta-análisis de determinismo que constituye el núcleo de esta investigación **no se ve afectado**: usa los documentos generados como datos, independientemente de la premisa del experimento original. Ver [investigación completa](../opencode-deepseek-v4-reasoning-effort/README.es.md).
+
 ### Pregunta de determinismo
 
 A partir de ahí surgió un meta-análisis: ¿qué pasa si el **mismo modelo** (DeepSeek V4 Flash Free) analiza repetidamente esos mismos datos (Op1, Op2, Op3 y sus derivados)? ¿Llega a las mismas conclusiones o diverge? Para medirlo, se pidió al mismo modelo que analizara los 12 documentos resultantes en **3 forks independientes**. Si el modelo fuera determinista, los 3 análisis serían idénticos. Si no, divergirían.

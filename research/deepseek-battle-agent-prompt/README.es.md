@@ -510,6 +510,8 @@ System prompt oculto que DeepSeek inyecta en cada llamada. No lo vemos pero hay 
 
 Esta capa puede cambiar sin previo aviso. Si DeepSeek refuerza "sé conciso", Pro se vuelve más rápido. Si refuerza "sé exhaustivo", Flash se vuelve más lento. Explica por qué un mismo modelo a veces "se comporta distinto" sin que hayamos tocado nada.
 
+Una investigación posterior destapó parte de esta capa opaca: DeepSeek fuerza `reasoning_effort` a `"max"` cuando detecta un perfil de agente (tools + cabecera `x-session-affinity`), y su API Gateway inyecta un bloque de texto RE en el prompt antes del encoding. Ver [investigación completa](../opencode-deepseek-v4-reasoning-effort/README.es.md).
+
 ### Parámetros fuera de nuestro control
 
 Además del pre-prompt, DeepSeek controla ~15 parámetros de inferencia que afectan al
@@ -532,3 +534,4 @@ Desde OpenCode solo controlamos `model` y `reasoningEffort`. La observación con
 | [API Call Anatomy](https://github.com/criterium/opencode-lab/blob/main/research/api-call-anatomy/README.es.md) | Las tres capas que gobiernan un modelo y cómo OpenCode ensambla el system prompt |
 | [Control Flags vs Plan/Build](https://github.com/criterium/opencode-lab/blob/main/research/control-flags-vs-plan-build/README.es.md) | Por qué los flags de intención reemplazan al modo Plan nativo |
 | [Context Dump](https://github.com/criterium/opencode-lab/blob/main/research/context-dump/README.es.md) | Cómo extraer el system prompt de cualquier harness |
+| [Reasoning Effort en DeepSeek V4](https://github.com/criterium/opencode-lab/blob/main/research/opencode-deepseek-v4-reasoning-effort/README.es.md) | Cómo DeepSeek fuerza `"max"` al detectar agentes, por qué `reasoningEffort` se ignora en OpenCode |

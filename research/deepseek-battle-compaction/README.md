@@ -41,9 +41,11 @@ session uses Pro, Pro compacts. If it uses Flash, Flash compacts. This research
 compares both.
 
 | Alias | Model | ID | `reasoningEffort` | Relative cost |
-|---|---|---|---|---|
-| Flash | DeepSeek V4 Flash | `opencode-go/deepseek-v4-flash` | `"max"` | 1x |
-| Pro | DeepSeek V4 Pro | `opencode-go/deepseek-v4-pro` | `"high"` | ~13x |
+|---|---|---|---|---|---|
+| Flash | DeepSeek V4 Flash | `opencode-go/deepseek-v4-flash` | `"max"`¹ | 1x |
+| Pro | DeepSeek V4 Pro | `opencode-go/deepseek-v4-pro` | `"high"`¹ | ~13x |
+
+¹ The `reasoningEffort` value in `opencode.jsonc` **has no practical effect** on `opencode-go/*` channels. DeepSeek always forces `"max"` upon detecting the agent profile (tools + `x-session-affinity`). The table reflects the configured values, but both models effectively received `"max"`. The observed differences between Flash and Pro compactions are not due to the `reasoningEffort` parameter — they stem exclusively from architectural differences between the two models and from natural LLM indeterminism (a single compaction per model cannot distinguish pattern from noise). See [complete research](../opencode-deepseek-v4-reasoning-effort/README.md).
 
 Both share the same compaction prompt. Flash is the main session model
 (`default_agent`). The cost difference is intrinsic to the model.

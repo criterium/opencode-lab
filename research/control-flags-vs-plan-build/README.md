@@ -216,12 +216,14 @@ This asymmetry does not require separate prompts: the flags are harmless for Pro
 
 ### Model-specific `reasoningEffort`
 
-DeepSeek V4 exposes two real values: `"high"` (capped reasoning budget, ~4096 tokens) and `"max"` (unlimited). The same parameter has opposite effects per model:
+DeepSeek V4 exposes two real values: `"high"` (capped reasoning budget, ~4096 tokens) and `"max"` (unlimited). While earlier profiling suggested different values per model, after discovering that the parameter is ignored on OpenCode channels, the recommendation simplifies to `"max"` for both:
 
 | Model | `reasoningEffort` | Why |
 |-------|-------------------|-----|
-| Flash (junior) | `"max"` | **Necessary brake.** Its default bias is speed over completeness. `"max"` forces deliberation, reducing omissions and premature closure. |
-| Pro (senior) | `"high"` | **Amplifies overthinking.** Pro already deliberates deeply. `"max"` adds latency without proportional quality gain. `"high"` caps the reasoning budget, producing the same output faster. |
+| Flash (junior) | `"max"`¹ | **Only value with effect.** If the parameter worked, `"max"` forces the deliberation needed against its speed bias. |
+| Pro (senior) | `"max"`¹ | **Symmetry with Flash.** If the parameter worked, `"high"` would cap its reasoning, but since it has no practical effect, keeping `"max"` for both simplifies configuration. |
+
+¹ **Caveat:** On `opencode-go/*` (Go) and `opencode/*` (Zen) channels, the `reasoningEffort` value set in `opencode.jsonc` **has no practical effect**. DeepSeek detects the agent profile (tools + `x-session-affinity` header) and forces `"max"` regardless of the value sent. This section documents the *desirable* values if the parameter were effective, but within the OpenCode ecosystem with DeepSeek V4 models both effectively receive "max". See [complete research](../opencode-deepseek-v4-reasoning-effort/README.md). For actual RE control, you must step outside the OpenCode ecosystem (direct curl to the API without an agent profile).
 
 **Source:** [Battle Agent Prompt research](../deepseek-battle-agent-prompt/README.md) — 12k-line comparative session profiling Flash and Pro behavioral patterns.
 

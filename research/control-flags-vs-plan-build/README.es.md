@@ -216,12 +216,14 @@ Esta asimetría no requiere prompts separados: los flags son inofensivos para Pr
 
 ### `reasoningEffort` específico por modelo
 
-DeepSeek V4 expone dos valores reales: `"high"` (presupuesto de razonamiento limitado, ~4096 tokens) y `"max"` (ilimitado). El mismo parámetro tiene efectos opuestos según el modelo:
+DeepSeek V4 expone dos valores reales: `"high"` (presupuesto de razonamiento limitado, ~4096 tokens) y `"max"` (ilimitado). Aunque la recomendación de perfilado previo sugería valores distintos por modelo, tras descubrir que el parámetro es ignorado en canales OpenCode, la recomendación se simplifica a `"max"` para ambos:
 
 | Modelo | `reasoningEffort` | Por qué |
 |--------|-------------------|---------|
-| Flash (junior) | `"max"` | **Freno necesario.** Su sesgo por defecto es velocidad sobre completitud. `"max"` fuerza la deliberación, reduciendo omisiones y cierre prematuro. |
-| Pro (senior) | `"high"` | **Amplifica el exceso de análisis.** Pro ya delibera profundamente. `"max"` añade latencia sin una ganancia proporcional de calidad. `"high"` limita el presupuesto de razonamiento, produciendo el mismo resultado más rápido. |
+| Flash (junior) | `"max"`¹ | **Único valor con efecto.** Si el parámetro funcionara, `"max"` fuerza la deliberación necesaria contra su sesgo de velocidad. |
+| Pro (senior) | `"max"`¹ | **Simetría con Flash.** Si el parámetro funcionara, `"high"` limitaría su razonamiento, pero al no tener efecto práctico, mantener `"max"` en ambos simplifica la configuración. |
+
+¹ **Advertencia:** En los canales `opencode-go/*` (Go) y `opencode/*` (Zen), el valor de `reasoningEffort` configurado en `opencode.jsonc` **no tiene efecto práctico**. DeepSeek detecta el perfil de agente (tools + cabecera `x-session-affinity`) y fuerza `"max"` siempre, independientemente del valor enviado. Esta sección documenta los valores *deseables* si el parámetro fuera efectivo, pero en el ecosistema OpenCode con modelos DeepSeek V4 ambos reciben "max" efectivamente. Ver [investigación completa](../opencode-deepseek-v4-reasoning-effort/README.es.md). Para control real sobre RE, debe salirse del ecosistema OpenCode (curl a API directa sin perfil de agente).
 
 **Fuente:** [Battle Agent Prompt research](../deepseek-battle-agent-prompt/README.es.md) — perfilado comparativo de sesiones de 12k líneas de los patrones de comportamiento de Flash y Pro.
 
