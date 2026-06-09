@@ -143,6 +143,19 @@ y un cargador basado en plugin con carga bajo demanda (Opción B, recomendada).
 
 ---
 
+## Prompts
+
+### [Shared Agent Prompts](prompt/shared/README.es.md)
+
+Prompts de agente diseñados como un par técnico — profundidad sobre
+brevedad, honestidad sobre cortesía, niveles de certeza explícitos.
+Incluye prompts listos para usar para múltiples tipos de agente
+(`default`, `general`, `explore`, `compaction`) en inglés y español.
+Probado en DeepSeek V4, orientado a Linux (referencia `pdftotext`,
+`chafa`, `jq`, `tree`, `xmllint`, etc.).
+
+---
+
 ## Plugins
 
 ### [opencode-tools-override](plugins/opencode-tools-override/README.es.md)
